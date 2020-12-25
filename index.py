@@ -27,8 +27,6 @@ def handler(event, context):
     
     for res in result:
         for item in res['tweet_obj']:
-            print('test now')
-            print(item)
             postToDiscord(item)
 
 def get_tweet(user_id, time_range):
