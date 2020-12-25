@@ -20,13 +20,17 @@ api = tweepy.API(auth)
 # Translator
 translator = Translator()
 # Other
+target_ids = [x.strip() for x in str(os.getenv('TARGET_IDS')).split(',')]
+time_distance = os.environ['TIME_DISTANCE']
 basetime = datetime.datetime.now()
 
 
 def handler(event, context):
     result = []
-    for user_id in event['target_ids']:
-        result.append({'user_id':user_id,'tweet_obj':get_tweet(user_id, event['time_distance'])})
+    print(target_ids)
+    for user_id in target_ids:
+        print(user_id)
+        result.append({'user_id':user_id,'tweet_obj':get_tweet(user_id, int(time_distance))})
     
     for res in result:
         for item in res['tweet_obj']:
