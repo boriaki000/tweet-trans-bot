@@ -1,0 +1,4 @@
+tweepy==3.9.0
+googletrans==4.0.0-rc1
+boto3==1.16.43
+python-lambda-local==0.1.12
