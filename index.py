@@ -22,6 +22,7 @@ translator = Translator()
 # Other
 target_ids = [x.strip() for x in str(os.getenv('TARGET_IDS')).split(',')]
 time_distance = os.environ['TIME_DISTANCE']
+tweet_count = os.environ['TWEET_COUNT']
 basetime = datetime.datetime.now()
 
 
@@ -37,7 +38,7 @@ def handler(event, context):
             postToDiscord(item)
 
 def get_tweet(user_id, time_range):
-    tweets = api.user_timeline(user_id, count=1, tweet_mode='extended')
+    tweets = api.user_timeline(user_id, count=tweet_count, tweet_mode='extended')
     result = []
     for tweet in tweets:
         distance = basetime - tweet.created_at
