@@ -1,3 +1,6 @@
+import sys
+sys.path.append('lib')
+
 import json
 import datetime
 import os
