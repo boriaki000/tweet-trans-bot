@@ -11,6 +11,11 @@ $ docker run -itd -v $(pwd):/usr/src/app --name trbot trbot
 $ docker exec -it trbot sh
 ~~~
 
+You can test the function in local using by following command.
+~~~
+python-lambda-local -l lib/ -f handler -t 5 index.py event.json
+~~~
+
 ### Export Environment variable
 This bot uses following environment variable.<br>
 |key|description|
