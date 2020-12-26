@@ -22,6 +22,7 @@ api = tweepy.API(auth)
 translator = Translator()
 # Other
 logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 target_ids = [x.strip() for x in str(os.getenv('TARGET_IDS')).split(',')]
 time_distance = int(os.environ['TIME_DISTANCE'])
 tweet_count = os.environ['TWEET_COUNT']
