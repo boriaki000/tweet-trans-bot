@@ -34,6 +34,7 @@ def handler(event, context):
         result.append({'user_id':user_id,'tweet_obj':get_tweet(user_id)})
     
     for res in result:
+        res['tweet_obj'].reverse()
         for item in res['tweet_obj']:
             post_to_discord(item)
 
