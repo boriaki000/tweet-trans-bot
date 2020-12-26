@@ -41,7 +41,7 @@ def handler(event, context):
     result = []
     logger.info('START:Get Tweet')
     for user_id in target_ids:
-        result.append({'user_id':user_id,'tweet_obj':get_tweet(user_id)})
+        result.append({'user_id':user_id,'tweet_obj':get_tweet(user_id, basetime)})
     logger.info('END  :Get Tweet')
 
     logger.info('START:Post to Discord')
@@ -52,7 +52,7 @@ def handler(event, context):
                 post_to_discord(item)
     logger.info('END  :Post to Discord')
 
-def get_tweet(user_id):
+def get_tweet(user_id, basetime):
     for i in range(0, retry_count):
         try:
             tweets = api.user_timeline(user_id, count=tweet_count, tweet_mode='extended')
