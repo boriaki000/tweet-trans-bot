@@ -27,16 +27,17 @@ logger.setLevel(logging.INFO)
 target_ids = [x.strip() for x in str(os.getenv('TARGET_IDS')).split(',')]
 time_distance = int(os.environ['TIME_DISTANCE'])
 tweet_count = os.environ['TWEET_COUNT']
-basetime = datetime.datetime.now()
 retry_count = 3
 
-print('--- PARAM ---')
-print('target_ids:' + str(target_ids))
-print('basetime:' + str(basetime))
-print('time_distance:' + str(time_distance))
-print('tweet_count:' + str(tweet_count))
 
 def handler(event, context):
+    basetime = datetime.datetime.now()
+    print('--- PARAM ---')
+    print('target_ids:' + str(target_ids))
+    print('basetime:' + str(basetime))
+    print('time_distance:' + str(time_distance))
+    print('tweet_count:' + str(tweet_count))
+
     result = []
     logger.info('START:Get Tweet')
     for user_id in target_ids:
