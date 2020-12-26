@@ -28,9 +28,7 @@ basetime = datetime.datetime.now()
 
 def handler(event, context):
     result = []
-    print(target_ids)
     for user_id in target_ids:
-        print(user_id)
         result.append({'user_id':user_id,'tweet_obj':get_tweet(user_id)})
     
     for res in result:
