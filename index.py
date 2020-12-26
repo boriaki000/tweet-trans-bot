@@ -5,6 +5,7 @@ import json
 import datetime
 import os
 import requests
+import logging
 import tweepy
 from googletrans import Translator
 
@@ -20,6 +21,7 @@ api = tweepy.API(auth)
 # Translator
 translator = Translator()
 # Other
+logger = logging.getLogger()
 target_ids = [x.strip() for x in str(os.getenv('TARGET_IDS')).split(',')]
 time_distance = int(os.environ['TIME_DISTANCE'])
 tweet_count = os.environ['TWEET_COUNT']
@@ -28,13 +30,17 @@ basetime = datetime.datetime.now()
 
 def handler(event, context):
     result = []
+    logger.info('START:Get Tweet')
     for user_id in target_ids:
         result.append({'user_id':user_id,'tweet_obj':get_tweet(user_id)})
-    
+    logger.info('END  :Get Tweet')
+
+    logger.info('START:Post to Discord')
     for res in result:
         res['tweet_obj'].reverse()
         for item in res['tweet_obj']:
             post_to_discord(item)
+    logger.info('END  :Post to Discord')
 
 def get_tweet(user_id):
     try:
