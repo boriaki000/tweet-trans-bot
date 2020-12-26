@@ -28,6 +28,11 @@ time_distance = int(os.environ['TIME_DISTANCE'])
 tweet_count = os.environ['TWEET_COUNT']
 basetime = datetime.datetime.now()
 
+print('--- PARAM ---')
+print('target_ids:' + str(target_ids))
+print('basetime:' + str(basetime))
+print('time_distance:' + str(time_distance))
+print('tweet_count:' + str(tweet_count))
 
 def handler(event, context):
     result = []
@@ -38,9 +43,10 @@ def handler(event, context):
 
     logger.info('START:Post to Discord')
     for res in result:
-        res['tweet_obj'].reverse()
-        for item in res['tweet_obj']:
-            post_to_discord(item)
+        if res['tweet_obj']:
+            res['tweet_obj'].reverse()
+            for item in res['tweet_obj']:
+                post_to_discord(item)
     logger.info('END  :Post to Discord')
 
 def get_tweet(user_id):
