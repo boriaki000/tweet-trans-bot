@@ -44,20 +44,14 @@ def handler(event, context):
 
     result = get_search_result(basetime)
 
-    logger.info('START:Post to Discord')
     if event.get('testmode'):
         show_test_result(result)
     else:
-        for res in result:
-            if res['tweet_obj']:
-                res['tweet_obj'].reverse()
-                for item in res['tweet_obj']:
-                    post_to_discord(item)
-    logger.info('END  :Post to Discord')
+        post_to_discord(result)
 
 def get_search_result(basetime):
-    result = []
     logger.info('START:Get Tweet')
+    result = []
     for user_id in target_ids:
         result.append({'user_id':user_id,'tweet_obj':get_tweet(user_id, basetime)})
     logger.info('END  :Get Tweet')
@@ -83,10 +77,21 @@ def get_tweet(user_id, basetime):
             sleep(i * 5)
         else:
             return result
-    sys.stderr.write('Cannot complete get_tweet\n')
+    sys.stderr.write('get_tweet could not be completed. Please rerun for below user id.\n')
+    sys.stderr.write('user_id >> ' + user_id + '\n') 
+
     return False
 
-def post_to_discord(item):
+def post_to_discord(result):
+    logger.info('START:Post to Discord')
+    for res in result:
+        if res['tweet_obj']:
+            res['tweet_obj'].reverse()
+            for item in res['tweet_obj']:
+                call_discord_api(item)
+    logger.info('END  :Post to Discord')
+
+def call_discord_api(item):
     content = item['user_name'] + ' ' + item['created_at'] + '\n' + item['text'] + '\n' + item['url']
     try:
         response = requests.post(
@@ -96,8 +101,11 @@ def post_to_discord(item):
         )
         print(response)
     except Exception as e:
-        sys.stderr.write('Error occurs in post_to_discord\n')
+        sys.stderr.write('Error occurs in post_to_discord.\n')
         sys.stderr.write(str(e) + '\n')
+        sys.stderr.write('Could not post below content.\n')
+        sys.stderr.write('user_name >> ' + item['user_name'] + '\n') 
+        sys.stderr.write('created_at >> ' + item['created_at'] + '\n') 
     else:
         return response
 
