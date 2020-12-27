@@ -46,14 +46,7 @@ def handler(event, context):
 
     logger.info('START:Post to Discord')
     if event.get('testmode'):
-        print('test mode')
-        for res in result:
-            print(res['user_id'])
-            if res['tweet_obj']:
-                print(len(res['tweet_obj']))
-            else:
-                print('no tweet')
-        print(len(result))
+        show_test_result(result)
     else:
         for res in result:
             if res['tweet_obj']:
@@ -107,3 +100,13 @@ def post_to_discord(item):
         sys.stderr.write(str(e) + '\n')
     else:
         return response
+
+def show_test_result(result):
+    print('test mode')
+    for res in result:
+        print(res['user_id'])
+        if res['tweet_obj']:
+            print(len(res['tweet_obj']))
+        else:
+            print('no tweet')
+    print(len(result))
