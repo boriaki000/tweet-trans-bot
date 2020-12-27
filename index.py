@@ -2,11 +2,11 @@ import sys
 sys.path.append('lib')
 
 import json
-import datetime
 import os
 import requests
 import logging
 import tweepy
+from datetime import datetime
 from time import sleep
 from googletrans import Translator
 
@@ -31,7 +31,11 @@ retry_count = 3
 
 
 def handler(event, context):
-    basetime = datetime.datetime.now()
+    basetime = datetime.now()
+    # override parameter
+    if event.get('basetime'):
+        print('override basetime!')
+        basetime = datetime.strptime(event['basetime'], '%Y-%m-%d %H:%M:%S')
     print('--- PARAM ---')
     print('target_ids:' + str(target_ids))
     print('basetime:' + str(basetime))
