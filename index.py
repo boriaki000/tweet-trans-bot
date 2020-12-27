@@ -45,11 +45,21 @@ def handler(event, context):
     result = get_search_result(basetime)
 
     logger.info('START:Post to Discord')
-    for res in result:
-        if res['tweet_obj']:
-            res['tweet_obj'].reverse()
-            for item in res['tweet_obj']:
-                post_to_discord(item)
+    if event.get('testmode'):
+        print('test mode')
+        for res in result:
+            print(res['user_id'])
+            if res['tweet_obj']:
+                print(len(res['tweet_obj']))
+            else:
+                print('no tweet')
+        print(len(result))
+    else:
+        for res in result:
+            if res['tweet_obj']:
+                res['tweet_obj'].reverse()
+                for item in res['tweet_obj']:
+                    post_to_discord(item)
     logger.info('END  :Post to Discord')
 
 def get_search_result(basetime):
