@@ -5,9 +5,9 @@ import json
 import os
 import requests
 import logging
-import tweepy
 from datetime import datetime
 from time import sleep
+import tweepy
 from googletrans import Translator
 
 # Prepare key and token for tweepy.
@@ -42,11 +42,7 @@ def handler(event, context):
     print('time_distance:' + str(time_distance))
     print('tweet_count:' + str(tweet_count))
 
-    result = []
-    logger.info('START:Get Tweet')
-    for user_id in target_ids:
-        result.append({'user_id':user_id,'tweet_obj':get_tweet(user_id, basetime)})
-    logger.info('END  :Get Tweet')
+    result = get_search_result(basetime)
 
     logger.info('START:Post to Discord')
     for res in result:
@@ -55,6 +51,15 @@ def handler(event, context):
             for item in res['tweet_obj']:
                 post_to_discord(item)
     logger.info('END  :Post to Discord')
+
+def get_search_result(basetime):
+    result = []
+    logger.info('START:Get Tweet')
+    for user_id in target_ids:
+        result.append({'user_id':user_id,'tweet_obj':get_tweet(user_id, basetime)})
+    logger.info('END  :Get Tweet')
+
+    return result
 
 def get_tweet(user_id, basetime):
     for i in range(0, retry_count):
