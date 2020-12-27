@@ -11,9 +11,23 @@ $ docker run -itd -v $(pwd):/usr/src/app --name trbot trbot
 $ docker exec -it trbot sh
 ~~~
 
-You can test the function in local using by following command.
+You can execute the function in local using by following command.
 ~~~
 python-lambda-local -l lib/ -f handler -t 5 index.py event.json
+~~~
+
+You can execute with specific basetime by passing override.json.
+~~~
+{
+        "basetime":"2020-12-01 00:00:00"
+}
+~~~
+
+You can test the function by passing test.json
+~~~
+{
+        "testmode":"1"
+}
 ~~~
 
 ### Export Environment variable
