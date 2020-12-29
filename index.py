@@ -24,41 +24,40 @@ translator = Translator()
 # Other
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-target_ids = [x.strip() for x in str(os.getenv('TARGET_IDS')).split(',')]
-time_distance = int(os.environ['TIME_DISTANCE'])
-tweet_count = os.environ['TWEET_COUNT']
+tweet_count = 10
 retry_count = 3
 
 
 def handler(event, context):
     basetime = datetime.now()
-    # override parameter
     if event.get('basetime'):
-        print('override basetime!')
         basetime = datetime.strptime(event['basetime'], '%Y-%m-%d %H:%M:%S')
+    target_id = event['target_id']
+    time_distance = event['time_distance']
+
     print('--- PARAM ---')
-    print('target_ids:' + str(target_ids))
+    print('target_id:' + str(target_id))
     print('basetime:' + str(basetime))
     print('time_distance:' + str(time_distance))
     print('tweet_count:' + str(tweet_count))
 
-    result = get_search_result(basetime)
+    result = get_search_result(target_id, basetime, time_distance)
 
     if event.get('testmode'):
         show_test_result(result)
     else:
         post_to_discord(result)
 
-def get_search_result(basetime):
+def get_search_result(target_id, basetime, time_distance):
     logger.info('START:Get Tweet')
+
     result = []
-    for user_id in target_ids:
-        result.append({'user_id':user_id,'tweet_obj':get_tweet(user_id, basetime)})
+    result.append({'user_id':target_id,'tweet_obj':get_tweet(target_id, basetime, time_distance)})
     logger.info('END  :Get Tweet')
 
     return result
 
-def get_tweet(user_id, basetime):
+def get_tweet(user_id, basetime, time_distance):
     for i in range(0, retry_count):
         try:
             tweets = api.user_timeline(user_id, count=tweet_count, tweet_mode='extended')
