@@ -16,17 +16,30 @@ You can execute the function in local using by following command.
 python-lambda-local -l lib/ -f handler -t 5 index.py event.json
 ~~~
 
-You can execute with specific basetime by passing override.json.
+Event json sample.
 ~~~
 {
-        "basetime":"2020-12-01 00:00:00"
+    "target_id":"[USER ID]"
+    ,"time_distance":"180"
 }
 ~~~
 
-You can test the function by passing test.json
+You can execute with specific time by passing 'basetime' parameter.
 ~~~
 {
-        "testmode":"1"
+    "target_id":"[USER ID]"
+    ,"time_distance":"180"
+    ,"basetime":"2020-12-01 00:00:00"
+}
+~~~
+
+You can test the function by adding 'testmode' parameter.
+~~~
+{
+    "testmode":"1"
+    ,"target_id":"[USER ID]"
+    ,"time_distance":"180"
+    ,"basetime":"2020-12-01 00:00:00"
 }
 ~~~
 
@@ -39,6 +52,3 @@ This bot uses following environment variable.<br>
 |ACCESS_TOKEN|Your twitter key|
 |ACCESS_TOKEN_SECRET|Your twitter key|
 |DICORD_WEBHOOK|Your Discord channel's webhook url|
-|TIME_DISTANCE|How many seconds ago to get the information.|
-|TARGET_IDS|Twitter ids you want to get. eg.id1,id2,id3|
-|TWEET_COUNT|How many tweets you want to get.|
