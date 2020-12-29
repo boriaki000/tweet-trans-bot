@@ -22,6 +22,7 @@ api = tweepy.API(auth)
 # Translator
 translator = Translator()
 # Other
+discord_webhook = os.environ['DICORD_WEBHOOK']
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 tweet_count = 10
@@ -94,7 +95,7 @@ def call_discord_api(item):
     content = item['user_name'] + ' ' + item['created_at'] + '\n' + item['text'] + '\n' + item['url']
     try:
         response = requests.post(
-            os.environ['DICORD_WEBHOOK']
+            discord_webhook
             ,json.dumps({'content': content})
             ,headers={'Content-Type': 'application/json'}
         )
@@ -116,4 +117,3 @@ def show_test_result(result):
             print(len(res['tweet_obj']))
         else:
             print('no tweet')
-    print(len(result))
