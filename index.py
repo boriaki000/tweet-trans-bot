@@ -34,7 +34,7 @@ def handler(event, context):
     if event.get('basetime'):
         basetime = datetime.strptime(event['basetime'], '%Y-%m-%d %H:%M:%S')
     target_id = event['target_id']
-    time_distance = event['time_distance']
+    time_distance = int(event['time_distance'])
 
     print('--- PARAM ---')
     print('target_id:' + str(target_id))
@@ -42,23 +42,15 @@ def handler(event, context):
     print('time_distance:' + str(time_distance))
     print('tweet_count:' + str(tweet_count))
 
-    result = get_search_result(target_id, basetime, time_distance)
+    result = get_tweet(target_id, basetime, time_distance)
 
     if event.get('testmode'):
         show_test_result(result)
     else:
         post_to_discord(result)
 
-def get_search_result(target_id, basetime, time_distance):
-    logger.info('START:Get Tweet')
-
-    result = []
-    result.append({'user_id':target_id,'tweet_obj':get_tweet(target_id, basetime, time_distance)})
-    logger.info('END  :Get Tweet')
-
-    return result
-
 def get_tweet(user_id, basetime, time_distance):
+    logger.info('START:Get Tweet')
     for i in range(0, retry_count):
         try:
             tweets = api.user_timeline(user_id, count=tweet_count, tweet_mode='extended')
@@ -76,19 +68,19 @@ def get_tweet(user_id, basetime, time_distance):
             sys.stderr.write(str(e) + '\n')
             sleep(i * 5)
         else:
-            return result
+            logger.info('END  :Get Tweet')
+            return {'user_id':user_id, 'tweet_obj':result}
     sys.stderr.write('get_tweet could not be completed. Please rerun for below user id.\n')
     sys.stderr.write('user_id >> ' + user_id + '\n') 
 
-    return False
+    return {'user_id':user_id, 'tweet_obj':False}
 
 def post_to_discord(result):
     logger.info('START:Post to Discord')
-    for res in result:
-        if res['tweet_obj']:
-            res['tweet_obj'].reverse()
-            for item in res['tweet_obj']:
-                call_discord_api(item)
+    if result['tweet_obj']:
+        result['tweet_obj'].reverse()
+        for item in result['tweet_obj']:
+            call_discord_api(item)
     logger.info('END  :Post to Discord')
 
 def call_discord_api(item):
@@ -111,9 +103,8 @@ def call_discord_api(item):
 
 def show_test_result(result):
     print('test mode')
-    for res in result:
-        print(res['user_id'])
-        if res['tweet_obj']:
-            print(len(res['tweet_obj']))
-        else:
-            print('no tweet')
+    print(result['user_id'])
+    if result['tweet_obj']:
+        print(len(result['tweet_obj']))
+    else:
+        print('no tweet')
