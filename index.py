@@ -5,7 +5,8 @@ import json
 import os
 import requests
 import logging
-from datetime import datetime, timedelta, timezone
+from pytz import timezone
+from datetime import datetime, timedelta
 from time import sleep
 import tweepy
 from googletrans import Translator
@@ -27,29 +28,37 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 tweet_count = 10
 retry_count = 3
+timezone_utc = 'utc'
 
 
 def handler(event, context):
-    basetime = datetime.now(timezone.utc)
-    if event.get('basetime'):
-        basetime = datetime.strptime(event['basetime'], '%Y-%m-%d %H:%M:%S')
     target_id = event['target_id']
     time_distance = int(event['time_distance'])
+    if event.get('basetime'):
+        basetime = datetime.strptime(event['basetime'], '%Y-%m-%d %H:%M:%S')
+    else:
+        basetime = datetime.now(timezone.utc)
+
+    if event.get('timezone'):
+        timezone_str = event['timezone']
+    else:
+        timezone_str = timezone_utc
+
 
     print('--- PARAM ---')
     print('target_id:' + str(target_id))
     print('basetime:' + str(basetime))
     print('time_distance:' + str(time_distance))
-    print('tweet_count:' + str(tweet_count))
+    print('timezone:' + timezone_str)
 
-    result = get_tweet(target_id, basetime, time_distance)
+    result = get_tweet(target_id, basetime, time_distance, timezone_str)
 
     if event.get('testmode'):
         show_test_result(result)
     else:
         post_to_discord(result)
 
-def get_tweet(user_id, basetime, time_distance):
+def get_tweet(user_id, basetime, time_distance, timezone_str):
     logger.info('START:Get Tweet')
     text_prefix = '```'
     for i in range(0, retry_count):
@@ -61,7 +70,7 @@ def get_tweet(user_id, basetime, time_distance):
                 if distance.days == 0 and distance.seconds < time_distance:
                     translated = translator.translate('tranlated:' + tweet.full_text, src='en', dest='ja')
                     result.append({'user_name':tweet.user.name
-                                ,'created_at':str(tweet.created_at)
+                                ,'created_at':str(tweet.created_at.astimezone(timezone(timezone_str)))
                                 ,'text':text_prefix + translated.text + text_prefix
                                 ,'url':'https://twitter.com/' + user_id + '/status/' + str(tweet.id)})
         except Exception as e:
