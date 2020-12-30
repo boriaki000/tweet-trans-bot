@@ -51,6 +51,7 @@ def handler(event, context):
 
 def get_tweet(user_id, basetime, time_distance):
     logger.info('START:Get Tweet')
+    text_prefix = '```'
     for i in range(0, retry_count):
         try:
             tweets = api.user_timeline(user_id, count=tweet_count, tweet_mode='extended')
@@ -61,7 +62,7 @@ def get_tweet(user_id, basetime, time_distance):
                     translated = translator.translate('tranlated:' + tweet.full_text, src='en', dest='ja')
                     result.append({'user_name':tweet.user.name
                                 ,'created_at':str(tweet.created_at)
-                                ,'text':translated.text
+                                ,'text':text_prefix + translated.text + text_prefix
                                 ,'url':'https://twitter.com/' + user_id + '/status/' + str(tweet.id)})
         except Exception as e:
             sys.stderr.write('Error occurs in get_tweet\n')
