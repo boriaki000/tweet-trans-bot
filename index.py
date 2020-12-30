@@ -5,7 +5,7 @@ import json
 import os
 import requests
 import logging
-from pytz import timezone
+from pytz import timezone, utc
 from datetime import datetime, timedelta
 from time import sleep
 import tweepy
@@ -28,7 +28,6 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 tweet_count = 10
 retry_count = 3
-timezone_utc = 'utc'
 
 
 def handler(event, context):
@@ -37,12 +36,14 @@ def handler(event, context):
     if event.get('basetime'):
         basetime = datetime.strptime(event['basetime'], '%Y-%m-%d %H:%M:%S')
     else:
-        basetime = datetime.now(timezone.utc)
+        basetime = datetime.now(timezone(utc.zone))
+        basetime = basetime.replace(tzinfo=None)
 
     if event.get('timezone'):
         timezone_str = event['timezone']
     else:
-        timezone_str = timezone_utc
+        timezone_str = utc.zone
+    pytz_timezone = timezone(timezone_str)
 
 
     print('--- PARAM ---')
@@ -51,14 +52,14 @@ def handler(event, context):
     print('time_distance:' + str(time_distance))
     print('timezone:' + timezone_str)
 
-    result = get_tweet(target_id, basetime, time_distance, timezone_str)
+    result = get_tweet(target_id, basetime, time_distance, pytz_timezone)
 
     if event.get('testmode'):
         show_test_result(result)
     else:
         post_to_discord(result)
 
-def get_tweet(user_id, basetime, time_distance, timezone_str):
+def get_tweet(user_id, basetime, time_distance, pytz_timezone):
     logger.info('START:Get Tweet')
     text_prefix = '```'
     for i in range(0, retry_count):
@@ -70,7 +71,7 @@ def get_tweet(user_id, basetime, time_distance, timezone_str):
                 if distance.days == 0 and distance.seconds < time_distance:
                     translated = translator.translate('tranlated:' + tweet.full_text, src='en', dest='ja')
                     result.append({'user_name':tweet.user.name
-                                ,'created_at':str(tweet.created_at.astimezone(timezone(timezone_str)))
+                                ,'created_at':str(pytz_timezone.localize(tweet.created_at))
                                 ,'text':text_prefix + translated.text + text_prefix
                                 ,'url':'https://twitter.com/' + user_id + '/status/' + str(tweet.id)})
         except Exception as e:
