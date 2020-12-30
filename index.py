@@ -6,20 +6,18 @@ import os
 import requests
 import logging
 from pytz import timezone, utc
-from datetime import datetime, timedelta
+from datetime import datetime
 from time import sleep
-import tweepy
 from googletrans import Translator
+from requests_oauthlib import OAuth1Session
 
-# Prepare key and token for tweepy.
-consumer_key = os.environ['CONSUMER_KEY']
-consumer_secret = os.environ['CONSUMER_SECRET']
-access_token = os.environ['ACCESS_TOKEN']
-access_token_secret = os.environ['ACCESS_TOKEN_SECRET']
-# Create tweepy object
-auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_token_secret)
-api = tweepy.API(auth)
+# Twitter API
+twitter = OAuth1Session(os.environ['CONSUMER_KEY']
+    ,os.environ['CONSUMER_SECRET']
+    ,os.environ['ACCESS_TOKEN']
+    ,os.environ['ACCESS_TOKEN_SECRET']
+)
+twitter_api_url = 'https://api.twitter.com/1.1/statuses/user_timeline.json'
 # Translator
 translator = Translator()
 # Other
@@ -27,7 +25,7 @@ discord_webhook = os.environ['DICORD_WEBHOOK']
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 retry_count = 3
-
+text_prefix = '```'
 
 def handler(event, context):
     target_id = event['target_id']
@@ -59,19 +57,20 @@ def handler(event, context):
 
 def get_tweet(user_id, basetime, time_distance, pytz_timezone):
     logger.info('START:Get Tweet')
-    text_prefix = '```'
     for i in range(0, retry_count):
         try:
-            tweets = api.user_timeline(user_id, tweet_mode='extended')
+            response = twitter.get(twitter_api_url, params = {'screen_name':user_id ,'count':10, 'include_rts':True})
+            timelines = json.loads(response.text)
             result = []
-            for tweet in tweets:
-                distance = basetime - tweet.created_at
+            for tweet in timelines:
+                created_at = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+                distance = basetime - created_at
                 if distance.days == 0 and distance.seconds < time_distance:
-                    translated = translator.translate('tranlated:' + tweet.full_text, src='en', dest='ja')
-                    result.append({'user_name':tweet.user.name
-                                ,'created_at':str(pytz_timezone.localize(tweet.created_at))
+                    translated = translator.translate('tranlated:' + tweet['text'], src='en', dest='ja')
+                    result.append({'user_name':tweet['user']['name']
+                                ,'created_at':str(pytz_timezone.localize(created_at))
                                 ,'text':text_prefix + translated.text + text_prefix
-                                ,'url':'https://twitter.com/' + user_id + '/status/' + str(tweet.id)})
+                                ,'url':'https://twitter.com/' + user_id + '/status/' + str(tweet['id'])})
         except Exception as e:
             sys.stderr.write('Error occurs in get_tweet\n')
             sys.stderr.write(str(e) + '\n')
@@ -79,9 +78,9 @@ def get_tweet(user_id, basetime, time_distance, pytz_timezone):
         else:
             logger.info('END  :Get Tweet')
             return {'user_id':user_id, 'tweet_obj':result}
+
     sys.stderr.write('get_tweet could not be completed. Please rerun for below user id.\n')
     sys.stderr.write('user_id >> ' + user_id + '\n') 
-
     return {'user_id':user_id, 'tweet_obj':False}
 
 def post_to_discord(result):
