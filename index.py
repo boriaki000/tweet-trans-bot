@@ -5,7 +5,7 @@ import json
 import os
 import requests
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from time import sleep
 import tweepy
 from googletrans import Translator
@@ -30,7 +30,7 @@ retry_count = 3
 
 
 def handler(event, context):
-    basetime = datetime.now()
+    basetime = datetime.now(timezone.utc)
     if event.get('basetime'):
         basetime = datetime.strptime(event['basetime'], '%Y-%m-%d %H:%M:%S')
     target_id = event['target_id']
