@@ -26,7 +26,6 @@ translator = Translator()
 discord_webhook = os.environ['DICORD_WEBHOOK']
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-tweet_count = 10
 retry_count = 3
 
 
@@ -36,8 +35,7 @@ def handler(event, context):
     if event.get('basetime'):
         basetime = datetime.strptime(event['basetime'], '%Y-%m-%d %H:%M:%S')
     else:
-        basetime = datetime.now(timezone(utc.zone))
-        basetime = basetime.replace(tzinfo=None)
+        basetime = datetime.now()
 
     if event.get('timezone'):
         timezone_str = event['timezone']
@@ -64,7 +62,7 @@ def get_tweet(user_id, basetime, time_distance, pytz_timezone):
     text_prefix = '```'
     for i in range(0, retry_count):
         try:
-            tweets = api.user_timeline(user_id, count=tweet_count, tweet_mode='extended')
+            tweets = api.user_timeline(user_id, tweet_mode='extended')
             result = []
             for tweet in tweets:
                 distance = basetime - tweet.created_at
