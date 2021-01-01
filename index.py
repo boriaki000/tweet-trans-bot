@@ -21,7 +21,7 @@ twitter_api_url = 'https://api.twitter.com/1.1/statuses/user_timeline.json'
 # Translator
 translator = Translator()
 # Other
-discord_webhook = os.environ['DICORD_WEBHOOK']
+discord_webhook = os.environ['DISCORD_WEBHOOK']
 logger = logging.getLogger()
 if os.environ.get('LOG_LEVEL') and os.environ['LOG_LEVEL'] == 'debug':
     logger.setLevel(logging.DEBUG)

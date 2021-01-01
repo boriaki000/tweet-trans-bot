@@ -51,4 +51,4 @@ This bot uses following environment variable.<br>
 |CONSUMER_SECRET|Your twitter key|
 |ACCESS_TOKEN|Your twitter key|
 |ACCESS_TOKEN_SECRET|Your twitter key|
-|DICORD_WEBHOOK|Your Discord channel's webhook url|
+|DISCORD_WEBHOOK|Your Discord channel's webhook url|
