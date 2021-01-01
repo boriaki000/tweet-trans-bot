@@ -53,11 +53,11 @@ def handler(event, context):
     else:
         trans_mode = default_mode
 
-    print('--- PARAM ---')
-    print('target_id:' + str(target_id))
-    print('basetime:' + str(basetime))
-    print('time_distance:' + str(time_distance))
-    print('timezone:' + timezone_str)
+    logger.info('--- PARAM ---')
+    logger.info('target_id:' + str(target_id))
+    logger.info('basetime:' + str(basetime))
+    logger.info('time_distance:' + str(time_distance))
+    logger.info('timezone:' + timezone_str)
 
     result = get_tweet(target_id, basetime, time_distance, pytz_timezone, trans_mode)
 
