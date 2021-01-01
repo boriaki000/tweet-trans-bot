@@ -23,7 +23,10 @@ translator = Translator()
 # Other
 discord_webhook = os.environ['DICORD_WEBHOOK']
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+if os.environ.get('LOG_LEVEL') and os.environ['LOG_LEVEL'] == 'debug':
+    logger.setLevel(logging.DEBUG)
+else:
+    logger.setLevel(logging.INFO)
 retry_count = 3
 text_prefix = '```'
 
@@ -40,7 +43,6 @@ def handler(event, context):
     else:
         timezone_str = utc.zone
     pytz_timezone = timezone(timezone_str)
-
 
     print('--- PARAM ---')
     print('target_id:' + str(target_id))
@@ -72,16 +74,16 @@ def get_tweet(user_id, basetime, time_distance, pytz_timezone):
                                 ,'text':text_prefix + translated.text + text_prefix
                                 ,'url':'https://twitter.com/' + user_id + '/status/' + str(tweet['id'])})
         except Exception as e:
-            sys.stderr.write('Error occurs in get_tweet\n')
-            sys.stderr.write(str(e) + '\n')
+            logger.warn('Error occurs in get_tweet\n')
+            logger.warn(str(e) + '\n')
             sleep(i * 5)
         else:
             logger.info('END  :Get Tweet')
             return {'user_id':user_id, 'tweet_obj':result}
 
-    sys.stderr.write('get_tweet could not be completed. Please rerun for below user id.\n')
-    sys.stderr.write('user_id >> ' + user_id + '\n') 
-    return {'user_id':user_id, 'tweet_obj':False}
+    logger.error('get_tweet could not be completed. Please rerun for below user id.\n')
+    logger.error('user_id >> ' + user_id + '\n') 
+    raise Exception('Inner Error')
 
 def post_to_discord(result):
     logger.info('START:Post to Discord')
@@ -93,26 +95,31 @@ def post_to_discord(result):
 
 def call_discord_api(item):
     content = item['user_name'] + ' ' + item['created_at'] + '\n' + item['text'] + '\n' + item['url']
-    try:
-        response = requests.post(
-            discord_webhook
-            ,json.dumps({'content': content})
-            ,headers={'Content-Type': 'application/json'}
-        )
-        print(response)
-    except Exception as e:
-        sys.stderr.write('Error occurs in post_to_discord.\n')
-        sys.stderr.write(str(e) + '\n')
-        sys.stderr.write('Could not post below content.\n')
-        sys.stderr.write('user_name >> ' + item['user_name'] + '\n') 
-        sys.stderr.write('created_at >> ' + item['created_at'] + '\n') 
-    else:
-        return response
+    for i in range(0, retry_count):
+        try:
+            response = requests.post(
+                discord_webhook
+                ,json.dumps({'content': content})
+                ,headers={'Content-Type': 'application/json'}
+            )
+            if response.status_code != requests.codes['no_content']:
+                raise Exception('Webhook returned not expected code >>' + str(response))
+        except Exception as e:
+            logger.warn('Error occurs in post_to_discord.\n')
+            logger.warn(str(e) + '\n')
+            sleep(i * 5)
+        else:
+            return response
+
+    logger.error('Could not post below content.\n')
+    logger.error('user_name >> ' + item['user_name'] + '\n') 
+    logger.error('created_at >> ' + item['created_at'] + '\n') 
+    raise Exception('Inner Error')
 
 def show_test_result(result):
-    print('test mode')
-    print(result['user_id'])
+    logger.debug('test mode')
+    logger.debug(result['user_id'])
     if result['tweet_obj']:
-        print(len(result['tweet_obj']))
+        logger.debug(len(result['tweet_obj']))
     else:
-        print('no tweet')
+        logger.debug('no tweet')
