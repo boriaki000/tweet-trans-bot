@@ -29,6 +29,10 @@ else:
     logger.setLevel(logging.INFO)
 retry_count = 3
 text_prefix = '```'
+default_mode = {
+    "src":"en"
+    ,"dest":"ja"
+}
 
 def handler(event, context):
     target_id = event['target_id']
@@ -44,20 +48,25 @@ def handler(event, context):
         timezone_str = utc.zone
     pytz_timezone = timezone(timezone_str)
 
+    if event.get('trans_mode'):
+        trans_mode = event['trans_mode']
+    else:
+        trans_mode = default_mode
+
     print('--- PARAM ---')
     print('target_id:' + str(target_id))
     print('basetime:' + str(basetime))
     print('time_distance:' + str(time_distance))
     print('timezone:' + timezone_str)
 
-    result = get_tweet(target_id, basetime, time_distance, pytz_timezone)
+    result = get_tweet(target_id, basetime, time_distance, pytz_timezone, trans_mode)
 
     if event.get('testmode'):
         show_test_result(result)
     else:
         post_to_discord(result)
 
-def get_tweet(user_id, basetime, time_distance, pytz_timezone):
+def get_tweet(user_id, basetime, time_distance, pytz_timezone, trans_mode):
     logger.info('START:Get Tweet')
     for i in range(0, retry_count):
         try:
@@ -68,10 +77,10 @@ def get_tweet(user_id, basetime, time_distance, pytz_timezone):
                 created_at = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                 distance = basetime - created_at
                 if distance.days == 0 and distance.seconds < time_distance:
-                    translated = translator.translate('tranlated:' + tweet['full_text'], src='en', dest='ja')
+                    text = extract_text(tweet, trans_mode)
                     result.append({'user_name':tweet['user']['name']
                                 ,'created_at':str(pytz_timezone.localize(created_at))
-                                ,'text':text_prefix + translated.text + text_prefix
+                                ,'text':text_prefix + text + text_prefix
                                 ,'url':'https://twitter.com/' + user_id + '/status/' + str(tweet['id'])})
         except Exception as e:
             logger.warn('Error occurs in get_tweet\n')
@@ -84,6 +93,17 @@ def get_tweet(user_id, basetime, time_distance, pytz_timezone):
     logger.error('get_tweet could not be completed. Please rerun for below user id.\n')
     logger.error('user_id >> ' + user_id + '\n') 
     raise Exception('Inner Error')
+
+def extract_text(tweet_obj, trans_mode):
+    if tweet_obj.get('retweeted_status'):
+        text = tweet_obj['retweeted_status']['full_text']
+    else:
+        text = tweet_obj['full_text']
+
+    if not trans_mode.get('skip_mode'):
+        text = translator.translate('translated:' + text, src=trans_mode['dest'], dest=trans_mode['dest']).text
+
+    return text
 
 def post_to_discord(result):
     logger.info('START:Post to Discord')
@@ -121,5 +141,7 @@ def show_test_result(result):
     logger.debug(result['user_id'])
     if result['tweet_obj']:
         logger.debug(len(result['tweet_obj']))
+        for res in result['tweet_obj']:
+            logger.debug(res['text'])
     else:
         logger.debug('no tweet')
