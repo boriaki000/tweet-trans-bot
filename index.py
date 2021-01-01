@@ -96,7 +96,7 @@ def get_tweet(user_id, basetime, time_distance, pytz_timezone, trans_mode):
 
 def extract_text(tweet_obj, trans_mode):
     if tweet_obj.get('retweeted_status'):
-        text = tweet_obj['retweeted_status']['full_text']
+        text = 'RT ' + tweet_obj['retweeted_status']['full_text']
     else:
         text = tweet_obj['full_text']
 
