@@ -129,6 +129,7 @@ def call_discord_api(item):
             logger.warn(str(e) + '\n')
             sleep(i * 5)
         else:
+            logger.info('success!')
             return response
 
     logger.error('Could not post below content.\n')
