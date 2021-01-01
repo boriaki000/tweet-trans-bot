@@ -61,14 +61,14 @@ def get_tweet(user_id, basetime, time_distance, pytz_timezone):
     logger.info('START:Get Tweet')
     for i in range(0, retry_count):
         try:
-            response = twitter.get(twitter_api_url, params = {'screen_name':user_id ,'count':10, 'include_rts':True})
+            response = twitter.get(twitter_api_url, params = {'screen_name':user_id ,'count':10, 'include_rts':True, 'tweet_mode':'extended'})
             timelines = json.loads(response.text)
             result = []
             for tweet in timelines:
                 created_at = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
                 distance = basetime - created_at
                 if distance.days == 0 and distance.seconds < time_distance:
-                    translated = translator.translate('tranlated:' + tweet['text'], src='en', dest='ja')
+                    translated = translator.translate('tranlated:' + tweet['full_text'], src='en', dest='ja')
                     result.append({'user_name':tweet['user']['name']
                                 ,'created_at':str(pytz_timezone.localize(created_at))
                                 ,'text':text_prefix + translated.text + text_prefix
