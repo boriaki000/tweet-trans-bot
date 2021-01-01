@@ -101,7 +101,7 @@ def extract_text(tweet_obj, trans_mode):
         text = tweet_obj['full_text']
 
     if not trans_mode.get('skip_mode'):
-        text = translator.translate('translated:' + text, src=trans_mode['dest'], dest=trans_mode['dest']).text
+        text = translator.translate('translated:' + text, src=trans_mode['src'], dest=trans_mode['dest']).text
 
     return text
 
