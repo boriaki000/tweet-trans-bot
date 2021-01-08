@@ -27,7 +27,7 @@ if os.environ.get('LOG_LEVEL') and os.environ['LOG_LEVEL'] == 'debug':
     logger.setLevel(logging.DEBUG)
 else:
     logger.setLevel(logging.INFO)
-retry_count = 3
+retry_count = 2
 text_prefix = '```'
 default_mode = {
     "src":"en"
